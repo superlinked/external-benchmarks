@@ -4,17 +4,19 @@ This repository contains a high-performance vector search benchmarking suite opt
 
 ## Datasets Available
 
-### Gift Cards Dataset (Baseline)
-- **Size**: 1,137 products
-- **Embeddings**: 2,688-dimensional vectors (7 fields concatenated)
-- **Model**: BAAI/bge-small-en-v1.5
-- **Processing time**: ~43 seconds on M3 Max
-
-### Appliances Dataset (Large Scale)
+### Appliances Dataset (Primary)
 - **Size**: 94,327 products 
 - **Embeddings**: 2,688-dimensional vectors (7 fields concatenated)
 - **Model**: BAAI/bge-small-en-v1.5
-- **Processing time**: ~40 minutes on M3 Max
+- **Processing time**: ~40 minutes on M3 Max (estimated, in progress)
+- **Current configuration**: Default dataset processed by `process_dataset.py`
+
+### Gift Cards Dataset (Reference)
+- **Size**: 1,137 products
+- **Embeddings**: 2,688-dimensional vectors (7 fields concatenated)
+- **Model**: BAAI/bge-small-en-v1.5
+- **Processing time**: TBD (not yet processed with 7-field strategy)
+- **Usage**: Available for smaller-scale testing and comparisons
 
 ## Data Storage
 
@@ -79,17 +81,23 @@ pip install -r requirements.txt
 
 ### Process Datasets
 
-1. Download raw data (or use existing data):
+The script is configured to process the Appliances dataset by default:
+
 ```bash
-# The script will download meta_Appliances.jsonl automatically
 python process_dataset.py
 ```
 
-2. This will:
-   - Download Amazon Reviews 2023 metadata (if not present)
-   - Process and clean the data across 7 text fields
-   - Generate 2,688-dimensional embeddings using BAAI/bge-small-en-v1.5
-   - Save result as `appliances_with_embeddings.parquet`
+This will:
+- Download `meta_Appliances.jsonl` from Amazon Reviews 2023 (if not present)
+- Process and clean 94,327 product records across 7 text fields
+- Generate 2,688-dimensional embeddings using BAAI/bge-small-en-v1.5
+- Save result as `appliances_with_embeddings.parquet`
+
+To process Gift Cards instead, modify the script:
+```python
+metadata_file = "meta_Gift_Cards.jsonl"  # Change from "meta_Appliances.jsonl"
+output_file = "gift_cards_with_embeddings.parquet"  # Change output filename
+```
 
 ### Run Benchmarks
 
@@ -127,11 +135,11 @@ The processed parquet files contain:
 ## Benchmark Results
 
 ### M3 Max Performance (128GB Unified Memory)
-- **Gift Cards (1K records)**: 43 seconds total processing
-- **Appliances (94K records)**: ~40 minutes total processing
+- **Appliances (94K records)**: ~40 minutes total processing (in progress)
 - **Throughput**: ~2,300 records/minute sustained
 - **Memory Usage**: 99%+ utilization (127GB/128GB)
 - **GPU Utilization**: 100% compute usage
+- **Gift Cards (1K records)**: Processing time TBD with current 7-field configuration
 
 ### Processing Breakdown
 - Field-level parallel processing with 12 workers
