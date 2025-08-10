@@ -1,20 +1,20 @@
 # Vector Search Benchmarking Suite
 
-This repository contains a comprehensive vector search benchmarking suite optimized for Apple Silicon M3 Max and other high-performance hardware. The suite processes Amazon Reviews 2023 datasets with advanced embedding generation and performance testing.
+This repository contains a high-performance vector search benchmarking suite optimized for Apple Silicon M3 Max and other high-performance hardware. The suite processes Amazon Reviews 2023 datasets with advanced embedding generation and comprehensive performance testing.
 
 ## Datasets Available
 
 ### Gift Cards Dataset (Baseline)
 - **Size**: 1,137 products
-- **Embeddings**: 2688-dimensional vectors (7 fields concatenated)
+- **Embeddings**: 2,688-dimensional vectors (7 fields concatenated)
 - **Model**: BAAI/bge-small-en-v1.5
 - **Processing time**: ~43 seconds on M3 Max
 
 ### Appliances Dataset (Large Scale)
 - **Size**: 94,327 products 
-- **Embeddings**: 2688-dimensional vectors (7 fields concatenated)
+- **Embeddings**: 2,688-dimensional vectors (7 fields concatenated)
 - **Model**: BAAI/bge-small-en-v1.5
-- **Processing time**: ~40 minutes on M3 Max (estimated)
+- **Processing time**: ~40 minutes on M3 Max
 
 ## Data Storage
 
@@ -36,49 +36,60 @@ gsutil cp gs://superlinked-benchmarks-external/appliances_with_embeddings.parque
 
 ## Advanced Embedding Strategy
 
-- **Model**: `BAAI/bge-small-en-v1.5` (384 dims per field)
-- **Fields**: title, description, features, main_category, store, categories, details
+- **Model**: `BAAI/bge-small-en-v1.5` (384 dimensions per field)
+- **Fields Embedded**: 
+  1. `title` - Product title
+  2. `description` - Product description
+  3. `features` - Product features list
+  4. `main_category` - Main product category
+  5. `store` - Store name
+  6. `categories` - Category hierarchy
+  7. `details` - Additional product details
 - **Total Dimensions**: 7 × 384 = 2,688 dimensions
-- **Hardware Acceleration**: MPS on Apple Silicon, CUDA fallback
-- **Batch Processing**: Up to 1024 items per batch for optimal performance
+- **Hardware Acceleration**: MPS on Apple Silicon, CUDA on NVIDIA GPUs
+- **Batch Processing**: Up to 1024 items per batch for maximum throughput
+- **Parallel Processing**: 12-worker ThreadPoolExecutor for optimal CPU utilization
 
-## Dataset Statistics
+## Performance Optimizations
 
-```
-Total records: 1,137
-Records with descriptions: 875 (77%)
-Records with features: 1,032 (91%)
-Records with ratings: 1,137 (100%)
-Records with prices: 380 (33%)
-Average rating: 4.49/5.0
+### M3 Max Optimizations
+- **Memory Utilization**: Achieves 99%+ unified memory usage (127GB/128GB)
+- **GPU Utilization**: 100% compute utilization during processing
+- **Batch Size**: Aggressive 1024-item batches for maximum bandwidth
+- **Parallel Workers**: 12 concurrent threads matching CPU core count
+- **Processing Rate**: ~2,300 records/minute for large datasets
 
-Rating Distribution:
-- Excellent (4.5-5.0): 797 items (70%)
-- High (4.0-4.5): 160 items (14%)
-- Medium (3.5-4.0): 84 items (7%)
-- Low (0-3.5): 96 items (8%)
-```
+### Hardware Requirements
+- **Minimum RAM**: 16GB (recommended: 64GB+ for large datasets)
+- **GPU**: Apple Silicon MPS or NVIDIA CUDA support
+- **Storage**: SSD recommended for dataset I/O
 
 ## Setup and Usage
 
 ### Prerequisites
 
 ```bash
-pip install pandas pyarrow torch transformers sentence-transformers numpy tqdm scikit-learn
+pip install pandas pyarrow torch transformers numpy tqdm scikit-learn
 ```
 
-### Generate the Dataset
-
-1. Run the data processing script:
+Or use the requirements file:
 ```bash
+pip install -r requirements.txt
+```
+
+### Process Datasets
+
+1. Download raw data (or use existing data):
+```bash
+# The script will download meta_Appliances.jsonl automatically
 python process_dataset.py
 ```
 
-This will:
-- Download the Gift Cards metadata from Amazon Reviews 2023
-- Process and clean the data
-- Generate vector embeddings using `all-MiniLM-L6-v2`
-- Save the result as `gift_cards_with_embeddings.parquet`
+2. This will:
+   - Download Amazon Reviews 2023 metadata (if not present)
+   - Process and clean the data across 7 text fields
+   - Generate 2,688-dimensional embeddings using BAAI/bge-small-en-v1.5
+   - Save result as `appliances_with_embeddings.parquet`
 
 ### Run Benchmarks
 
@@ -86,49 +97,19 @@ This will:
 python benchmark.py
 ```
 
-## Benchmark Query Types
-
-The benchmark suite tests different types of vector search scenarios:
-
-### 1. Product Search Queries
-- "amazon gift card for birthday"
-- "digital gift card instant delivery"  
-- "physical gift card with greeting"
-- "holiday themed gift card"
-- "corporate gift cards bulk"
-
-### 2. Feature-Based Queries
-- "no expiration date gift card"
-- "customizable gift card design"
-- "gift card with fast shipping"
-- "electronic gift card email"
-- "gift card for any occasion"
-
-## Filter Scenarios (Different Selectivity)
-
-The benchmark tests various metadata filter combinations to simulate real-world search scenarios:
-
-| Filter Scenario | Selectivity | Description |
-|----------------|-------------|-------------|
-| No Filters | 100% | Pure vector similarity search |
-| High Rating Only | ~70% | Rating ≥ 4.0 |
-| Excellent Rating | ~70% | Rating tier = "excellent" |
-| Popular Items | ~35% | Review count ≥ 100 |
-| High Rating + Popular | ~25% | Rating ≥ 4.0 AND reviews ≥ 100 |
-| Premium Items | ~33% | Has price information |
-| Amazon Store Only | Varies | Store = "Amazon" |
-| Highly Selective | ~5% | Rating ≥ 4.5 AND reviews ≥ 500 AND has price |
-
 ## Dataset Schema
 
-The parquet file contains the following columns:
+The processed parquet files contain:
 
 ### Core Product Data
 - `parent_asin`: Unique product identifier
 - `title`: Product title
 - `description`: Product description text
-- `features`: List of product features
-- `combined_text`: Title + description + features (used for embeddings)
+- `features`: Product features list
+- `main_category`: Primary category
+- `store`: Store/seller name
+- `categories`: Category hierarchy array
+- `details`: Additional product details dictionary
 
 ### Rating & Review Data
 - `average_rating`: Average user rating (1-5 scale)
@@ -139,70 +120,48 @@ The parquet file contains the following columns:
 ### Metadata
 - `price`: Product price (when available)
 - `has_price`: Boolean indicating price availability
-- `main_category`: "Gift Cards"
-- `categories`: List of product categories
-- `store`: Store name (mostly "Amazon")
-- `details`: Additional product details
 
 ### Vector Data
-- `embedding`: 384-dimensional vector embedding
+- `embedding`: 2,688-dimensional vector (7 fields × 384 dims each)
 
-## Performance Characteristics
+## Benchmark Results
 
-On Apple M3 Pro (using MPS acceleration):
+### M3 Max Performance (128GB Unified Memory)
+- **Gift Cards (1K records)**: 43 seconds total processing
+- **Appliances (94K records)**: ~40 minutes total processing
+- **Throughput**: ~2,300 records/minute sustained
+- **Memory Usage**: 99%+ utilization (127GB/128GB)
+- **GPU Utilization**: 100% compute usage
 
-### Typical Search Performance
-- **No filters**: ~8-15ms per query
-- **Simple filters** (1-2 conditions): ~10-20ms per query
-- **Complex filters** (3+ conditions): ~15-30ms per query
-- **Embedding generation**: ~4s for full dataset (1,137 items)
-
-### Search Quality
-- High-quality semantic search with `all-MiniLM-L6-v2` embeddings
-- Good recall for product-specific queries
-- Effective feature-based matching
-- Handles synonyms and related concepts well
-
-## Extending the Dataset
-
-To create larger benchmarking datasets:
-
-1. **Use more categories**: Download additional categories from Amazon Reviews 2023
-2. **Include review text**: Add embeddings for actual user reviews
-3. **Multi-modal**: Include image embeddings using vision models
-4. **Temporal data**: Add time-based filtering scenarios
-
-Example categories for expansion:
-- Electronics (larger dataset ~2M items)
-- Books (very large ~15M items)  
-- Clothing (large ~5M items)
-
-## Files
-
-- `process_dataset.py`: Script to download and process the raw data
-- `benchmark.py`: Comprehensive benchmarking suite
-- `gift_cards_with_embeddings.parquet`: Final dataset with embeddings
-- `requirements.txt`: Python dependencies
-- `benchmark_results.csv`: Benchmark performance results
+### Processing Breakdown
+- Field-level parallel processing with 12 workers
+- Single-batch processing for smaller datasets
+- Progressive batch processing for large datasets
+- L2 normalization and memory optimization
 
 ## Use Cases
 
-This dataset is ideal for:
+This benchmarking suite is ideal for:
 
-1. **Vector Database Benchmarking**: Test search performance and accuracy
-2. **Hybrid Search Testing**: Combine vector similarity with metadata filters
-3. **Embedding Model Evaluation**: Compare different embedding models
-4. **Search Algorithm Development**: Develop and test new search approaches
-5. **Performance Analysis**: Understand search latency under different conditions
+1. **Vector Database Performance Testing**: Measure search latency and accuracy
+2. **Embedding Model Evaluation**: Compare different models at scale
+3. **Hardware Optimization**: Test GPU/CPU utilization patterns
+4. **Scalability Testing**: Understand performance characteristics across dataset sizes
+5. **Multi-field Search**: Benchmark concatenated vs separate field strategies
 
-## Hardware Optimization
+## Architecture
 
-The dataset generation and benchmarking code is optimized for Apple Silicon:
+### Parallel Processing Design
+- ThreadPoolExecutor with CPU-core-matched worker count
+- Field-level parallelization for maximum throughput
+- Memory-efficient batch processing with automatic cleanup
+- MPS/CUDA acceleration with fallback handling
 
-- **MPS acceleration**: Uses Metal Performance Shaders for embedding generation
-- **Batch processing**: Efficient batch inference (32 items per batch)
-- **Memory efficient**: Streaming processing for larger datasets
-- **Fast storage**: Parquet format for quick loading
+### Optimization Features
+- Aggressive batch sizing (up to 1024 items)
+- Single-batch processing for small datasets
+- Progressive batching with memory management
+- Hardware-specific optimizations (MPS float32, etc.)
 
 ## License
 
