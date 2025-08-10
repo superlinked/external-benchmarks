@@ -1,15 +1,46 @@
-# Amazon Gift Cards Vector Search Benchmark Dataset
+# Vector Search Benchmarking Suite
 
-This repository contains a vector search benchmarking dataset based on Amazon Gift Cards from the [Amazon Reviews 2023](https://amazon-reviews-2023.github.io/) dataset. The dataset includes 1,137 gift card products with metadata and 384-dimensional vector embeddings generated from product descriptions.
+This repository contains a comprehensive vector search benchmarking suite optimized for Apple Silicon M3 Max and other high-performance hardware. The suite processes Amazon Reviews 2023 datasets with advanced embedding generation and performance testing.
 
-## Dataset Overview
+## Datasets Available
 
-- **Source**: Amazon Reviews 2023 - Gift Cards category
+### Gift Cards Dataset (Baseline)
 - **Size**: 1,137 products
-- **Embeddings**: 384-dimensional vectors using `all-MiniLM-L6-v2`
-- **File Format**: Parquet (3.3 MB)
-- **Text Fields**: Title, description, features (combined for embeddings)
-- **Metadata**: Ratings, review counts, prices, categories, store info
+- **Embeddings**: 2688-dimensional vectors (7 fields concatenated)
+- **Model**: BAAI/bge-small-en-v1.5
+- **Processing time**: ~43 seconds on M3 Max
+
+### Appliances Dataset (Large Scale)
+- **Size**: 94,327 products 
+- **Embeddings**: 2688-dimensional vectors (7 fields concatenated)
+- **Model**: BAAI/bge-small-en-v1.5
+- **Processing time**: ~40 minutes on M3 Max (estimated)
+
+## Data Storage
+
+All large data files are stored in Google Cloud Storage for easy access:
+
+**Bucket**: `gs://superlinked-benchmarks-external/`
+
+### Download Data Files
+
+```bash
+# Download raw datasets
+gsutil cp gs://superlinked-benchmarks-external/meta_Gift_Cards.jsonl .
+gsutil cp gs://superlinked-benchmarks-external/meta_Appliances.jsonl .
+
+# Download processed datasets with embeddings
+gsutil cp gs://superlinked-benchmarks-external/gift_cards_with_embeddings.parquet .
+gsutil cp gs://superlinked-benchmarks-external/appliances_with_embeddings.parquet .
+```
+
+## Advanced Embedding Strategy
+
+- **Model**: `BAAI/bge-small-en-v1.5` (384 dims per field)
+- **Fields**: title, description, features, main_category, store, categories, details
+- **Total Dimensions**: 7 × 384 = 2,688 dimensions
+- **Hardware Acceleration**: MPS on Apple Silicon, CUDA fallback
+- **Batch Processing**: Up to 1024 items per batch for optimal performance
 
 ## Dataset Statistics
 
