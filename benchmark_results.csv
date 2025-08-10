@@ -1,0 +1,17 @@
+query_type,scenario,selectivity_pct,avg_time_ms,num_queries
+Product Search,No Filters (100% selectivity),100.0,328.1278133392334,5
+Product Search,High Rating Only (70% selectivity),86.01583113456465,18.22514533996582,5
+Product Search,Excellent Rating (70% selectivity),70.09674582233949,21.338224411010742,5
+Product Search,Popular Items (35% selectivity),51.80299032541777,18.465423583984375,5
+Product Search,High Rating + Popular (25% selectivity),51.53913808267371,23.90127182006836,5
+Product Search,Premium Items (33% selectivity),33.42128408091469,17.132234573364258,5
+Product Search,Amazon Store Only (varies),34.03693931398417,16.048240661621094,5
+Product Search,Highly Selective (5% selectivity),16.182937554969218,16.110754013061523,5
+Feature Search,No Filters (100% selectivity),100.0,99.8422622680664,5
+Feature Search,High Rating Only (70% selectivity),86.01583113456465,18.758153915405273,5
+Feature Search,Excellent Rating (70% selectivity),70.09674582233949,19.776535034179688,5
+Feature Search,Popular Items (35% selectivity),51.80299032541777,19.837141036987305,5
+Feature Search,High Rating + Popular (25% selectivity),51.53913808267371,17.421865463256836,5
+Feature Search,Premium Items (33% selectivity),33.42128408091469,16.02320671081543,5
+Feature Search,Amazon Store Only (varies),34.03693931398417,18.825626373291016,5
+Feature Search,Highly Selective (5% selectivity),16.182937554969218,16.3912296295166,5
