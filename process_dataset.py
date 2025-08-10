@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Process Amazon Gift Cards dataset and generate vector embeddings.
+Process Amazon dataset and generate vector embeddings.
 """
 
 import json
@@ -14,6 +14,8 @@ import warnings
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 import threading
+import argparse
+import time
 warnings.filterwarnings('ignore')
 
 def load_metadata(filepath):
@@ -95,17 +97,27 @@ def load_embedding_model():
     model_name = "BAAI/bge-small-en-v1.5"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     
-    # Try MPS first, fallback to CPU
+    # Try CUDA first, then MPS, fallback to CPU
     device = 'cpu'
-    if torch.backends.mps.is_available():
+    if torch.cuda.is_available():
+        try:
+            # Load with mixed precision for CUDA performance
+            model = AutoModel.from_pretrained(model_name, torch_dtype=torch.float16)
+            model = model.to('cuda')
+            device = 'cuda'
+            print(f"✅ Using CUDA device: {torch.cuda.get_device_name(0)}")
+            print(f"   CUDA memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
+        except Exception as e:
+            print(f"CUDA failed ({e}), trying fallback options...")
+            model = AutoModel.from_pretrained(model_name)
+            device = 'cpu'
+    elif torch.backends.mps.is_available():
         try:
             # Load with float32 for MPS stability 
             model = AutoModel.from_pretrained(model_name)
             model = model.to('mps')
             device = 'mps'
             print("✅ Using MPS with float32 for stability and performance")
-            
-            # torch.compile causes issues with transformers, skip for now
         except Exception as e:
             print(f"MPS failed ({e}), falling back to CPU")
             model = AutoModel.from_pretrained(model_name)
@@ -120,7 +132,7 @@ def load_embedding_model():
     return model, tokenizer, device
 
 def encode_texts(texts, model, tokenizer, device, batch_size=1024):
-    """Encode texts with aggressive optimizations for M3 Max"""
+    """Encode texts with optimizations for GPU acceleration"""
     embeddings = []
     
     print(f"  Processing {len(texts)} texts with massive batch size {batch_size}...")
@@ -134,7 +146,7 @@ def encode_texts(texts, model, tokenizer, device, batch_size=1024):
                              return_tensors="pt", max_length=512)
             
             # Move to device
-            if device == 'mps':
+            if device in ['cuda', 'mps']:
                 inputs = {k: v.to(device, non_blocking=True) for k, v in inputs.items()}
             else:
                 inputs = {k: v.to(device) for k, v in inputs.items()}
@@ -157,10 +169,15 @@ def encode_texts(texts, model, tokenizer, device, batch_size=1024):
             # Memory cleanup
             if device == 'mps':
                 torch.mps.empty_cache()
+            elif device == 'cuda':
+                torch.cuda.empty_cache()
     else:
         # Standard batch processing for larger datasets
         with torch.no_grad():
-            torch.mps.empty_cache() if device == 'mps' else None
+            if device == 'mps':
+                torch.mps.empty_cache()
+            elif device == 'cuda':
+                torch.cuda.empty_cache()
             
             for i in tqdm(range(0, len(texts), batch_size), desc="Processing"):
                 batch_texts = texts[i:i+batch_size]
@@ -168,7 +185,7 @@ def encode_texts(texts, model, tokenizer, device, batch_size=1024):
                 inputs = tokenizer(batch_texts, padding=True, truncation=True, 
                                  return_tensors="pt", max_length=512)
                 
-                if device == 'mps':
+                if device in ['cuda', 'mps']:
                     inputs = {k: v.to(device, non_blocking=True) for k, v in inputs.items()}
                 else:
                     inputs = {k: v.to(device) for k, v in inputs.items()}
@@ -185,8 +202,12 @@ def encode_texts(texts, model, tokenizer, device, batch_size=1024):
                 batch_embeddings = torch.nn.functional.normalize(batch_embeddings, p=2, dim=1)
                 embeddings.extend(batch_embeddings.cpu().numpy())
                 
-                if device == 'mps':
-                    torch.mps.empty_cache()
+                # Only clear cache occasionally to avoid overhead
+                if i % 10 == 0:  # Clear every 10 batches
+                    if device == 'mps':
+                        torch.mps.empty_cache()
+                    elif device == 'cuda':
+                        torch.cuda.empty_cache()
                 del inputs, outputs, hidden_states, mask_expanded, sum_embeddings, sum_mask, batch_embeddings
         
         embeddings = np.array(embeddings)
@@ -200,7 +221,7 @@ def encode_field_worker(field_data):
     embeddings = encode_texts(texts, model, tokenizer, device, batch_size)
     return field_name, embeddings
 
-def generate_embeddings(df, model_tokenizer_device, batch_size=1024):
+def generate_embeddings(df, model_tokenizer_device, batch_size=1024, max_workers=12):
     """Generate embeddings for 7 fields in parallel and concatenate to 2688 dimensions"""
     model, tokenizer, device = model_tokenizer_device
     print("Generating embeddings for 7 fields in parallel: title, description, features, category, store, cat_hierarchy, details...")
@@ -250,8 +271,8 @@ def generate_embeddings(df, model_tokenizer_device, batch_size=1024):
     print("Starting parallel embedding generation...")
     field_embeddings = {}
     
-    # Use 12 threads to saturate all CPU cores (M3 Max has 12 cores)
-    with ThreadPoolExecutor(max_workers=12) as executor:
+    # Use multiple threads for parallel processing
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_field = {executor.submit(encode_field_worker, task): task[0] for task in field_tasks}
         
         for future in concurrent.futures.as_completed(future_to_field):
@@ -297,14 +318,47 @@ def save_dataset(df, embeddings, output_path):
     return df_with_embeddings
 
 def main():
-    # Paths
-    metadata_file = "meta_Appliances.jsonl"
-    output_file = "appliances_with_embeddings.parquet"
+    parser = argparse.ArgumentParser(description='Process Amazon dataset and generate vector embeddings')
+    parser.add_argument('--dataset', type=str, default='Appliances',
+                       choices=['Appliances', 'Gift_Cards'],
+                       help='Dataset to process (default: Appliances)')
+    parser.add_argument('--input', type=str, default=None,
+                       help='Input JSONL file path (default: meta_{dataset}.jsonl)')
+    parser.add_argument('--output', type=str, default=None,
+                       help='Output parquet file path (default: {dataset_lower}_with_embeddings.parquet)')
+    parser.add_argument('--batch-size', type=int, default=1024,
+                       help='Batch size for embedding generation (default: 1024)')
+    parser.add_argument('--max-workers', type=int, default=12,
+                       help='Maximum number of parallel workers (default: 12)')
+    
+    args = parser.parse_args()
+    
+    # Set default paths based on dataset if not provided
+    if args.input is None:
+        metadata_file = f"meta_{args.dataset}.jsonl"
+    else:
+        metadata_file = args.input
+    
+    if args.output is None:
+        output_file = f"{args.dataset.lower()}_with_embeddings.parquet"
+    else:
+        output_file = args.output
+    
+    print(f"Processing dataset: {args.dataset}")
+    print(f"Input file: {metadata_file}")
+    print(f"Output file: {output_file}")
+    print(f"Batch size: {args.batch_size}")
+    print(f"Max workers: {args.max_workers}")
     
     # Check if input file exists
     if not Path(metadata_file).exists():
         print(f"Error: {metadata_file} not found. Please download it first.")
+        print(f"\nTo download from GCS, run:")
+        print(f"  gsutil cp gs://superlinked-benchmarks-external/{metadata_file} .")
         return
+    
+    # Track overall time
+    start_time = time.time()
     
     # Load and process data
     records = load_metadata(metadata_file)
@@ -323,15 +377,20 @@ def main():
     
     # Load embedding model and generate embeddings
     model_tokenizer_device = load_embedding_model()
-    embeddings = generate_embeddings(df, model_tokenizer_device)
+    embeddings = generate_embeddings(df, model_tokenizer_device, batch_size=args.batch_size, max_workers=args.max_workers)
     
     # Save the final dataset
     final_df = save_dataset(df, embeddings, output_file)
+    
+    # Calculate total time
+    end_time = time.time()
+    elapsed_time = end_time - start_time
     
     print(f"\nProcessing complete!")
     print(f"Dataset saved as: {output_file}")
     print(f"Embedding dimension: {len(embeddings[0])}")
     print(f"File size: {Path(output_file).stat().st_size / (1024*1024):.1f} MB")
+    print(f"Total processing time: {elapsed_time:.1f} seconds ({elapsed_time/60:.1f} minutes)")
 
 if __name__ == "__main__":
     main()
