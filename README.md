@@ -11,18 +11,20 @@ High-performance vector search benchmarking suite optimized for Apple Silicon an
 - **Output**: 1.4GB parquet file
 
 ### Gift Cards (Reference)  
-- **1,137 products** available for testing
-- Same embedding strategy as Appliances
-- Modify script configuration to process
+- **1,137 products** processed in **20 seconds on M3 Max**
+- **2,688-dimensional embeddings** (same strategy as Appliances)
+- **Output**: 16.3MB parquet file
 
 ## Data Access
 
 Large files stored in Google Cloud Storage: `gs://superlinked-benchmarks-external/`
 
 ```bash
-# Download datasets
+# Download datasets (choose one or both)
 gsutil cp gs://superlinked-benchmarks-external/meta_Appliances.jsonl .
+gsutil cp gs://superlinked-benchmarks-external/meta_Gift_Cards.jsonl .
 gsutil cp gs://superlinked-benchmarks-external/appliances_with_embeddings.parquet .
+gsutil cp gs://superlinked-benchmarks-external/gift_cards_with_embeddings.parquet .
 ```
 
 ## Embedding Strategy
