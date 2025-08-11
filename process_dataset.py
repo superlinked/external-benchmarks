@@ -90,42 +90,49 @@ def prepare_dataframe(records):
     print(f"Created DataFrame with {len(df)} rows and {len(df.columns)} columns")
     return df
 
-def load_embedding_model():
+def load_embedding_model(force_cpu=False):
     """Load BGE-small-en-v1.5 model with advanced optimizations"""
     print("Loading BGE-small-en-v1.5 model...")
     
     model_name = "BAAI/bge-small-en-v1.5"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     
-    # Try CUDA first, then MPS, fallback to CPU
-    device = 'cpu'
-    if torch.cuda.is_available():
-        try:
-            # Load with mixed precision for CUDA performance
-            model = AutoModel.from_pretrained(model_name, torch_dtype=torch.float16)
-            model = model.to('cuda')
-            device = 'cuda'
-            print(f"✅ Using CUDA device: {torch.cuda.get_device_name(0)}")
-            print(f"   CUDA memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
-        except Exception as e:
-            print(f"CUDA failed ({e}), trying fallback options...")
-            model = AutoModel.from_pretrained(model_name)
-            device = 'cpu'
-    elif torch.backends.mps.is_available():
-        try:
-            # Load with float32 for MPS stability 
-            model = AutoModel.from_pretrained(model_name)
-            model = model.to('mps')
-            device = 'mps'
-            print("✅ Using MPS with float32 for stability and performance")
-        except Exception as e:
-            print(f"MPS failed ({e}), falling back to CPU")
-            model = AutoModel.from_pretrained(model_name)
-            device = 'cpu'
-            print("✅ Using CPU")
-    else:
+    # Force CPU if requested
+    if force_cpu:
+        print("🖥️  Forced CPU mode - skipping GPU detection")
         model = AutoModel.from_pretrained(model_name)
-        print("✅ Using CPU")
+        device = 'cpu'
+        print("✅ Using CPU (forced)")
+    else:
+        # Try CUDA first, then MPS, fallback to CPU
+        device = 'cpu'
+        if torch.cuda.is_available():
+            try:
+                # Load with mixed precision for CUDA performance
+                model = AutoModel.from_pretrained(model_name, torch_dtype=torch.float16)
+                model = model.to('cuda')
+                device = 'cuda'
+                print(f"✅ Using CUDA device: {torch.cuda.get_device_name(0)}")
+                print(f"   CUDA memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
+            except Exception as e:
+                print(f"CUDA failed ({e}), trying fallback options...")
+                model = AutoModel.from_pretrained(model_name)
+                device = 'cpu'
+        elif torch.backends.mps.is_available():
+            try:
+                # Load with float32 for MPS stability 
+                model = AutoModel.from_pretrained(model_name)
+                model = model.to('mps')
+                device = 'mps'
+                print("✅ Using MPS with float32 for stability and performance")
+            except Exception as e:
+                print(f"MPS failed ({e}), falling back to CPU")
+                model = AutoModel.from_pretrained(model_name)
+                device = 'cpu'
+                print("✅ Using CPU")
+        else:
+            model = AutoModel.from_pretrained(model_name)
+            print("✅ Using CPU")
     
     model.eval()
     print(f"Model loaded: {model_name}")
@@ -330,6 +337,8 @@ def main():
                        help='Batch size for embedding generation (default: 1024)')
     parser.add_argument('--max-workers', type=int, default=12,
                        help='Maximum number of parallel workers (default: 12)')
+    parser.add_argument('--force-cpu', action='store_true',
+                       help='Force CPU usage instead of GPU acceleration')
     
     args = parser.parse_args()
     
@@ -349,6 +358,7 @@ def main():
     print(f"Output file: {output_file}")
     print(f"Batch size: {args.batch_size}")
     print(f"Max workers: {args.max_workers}")
+    print(f"Force CPU: {args.force_cpu}")
     
     # Check if input file exists
     if not Path(metadata_file).exists():
@@ -376,7 +386,7 @@ def main():
     print(df['rating_tier'].value_counts())
     
     # Load embedding model and generate embeddings
-    model_tokenizer_device = load_embedding_model()
+    model_tokenizer_device = load_embedding_model(force_cpu=args.force_cpu)
     embeddings = generate_embeddings(df, model_tokenizer_device, batch_size=args.batch_size, max_workers=args.max_workers)
     
     # Save the final dataset
