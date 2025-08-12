@@ -1,0 +1,246 @@
+{
+  "benchmark_10k": {
+    "total_records": 9000,
+    "avg_rating": 4.249,
+    "std_rating": 0.742,
+    "avg_price": 42.8,
+    "std_price": 105.22,
+    "avg_reviews": 248.9,
+    "unique_categories": 33,
+    "rating_tiers": 4,
+    "min_rating": 1.0,
+    "max_rating": 5.0,
+    "top_categories": [
+      [
+        "Books",
+        3695,
+        41.35
+      ],
+      [
+        "Automotive",
+        1343,
+        15.03
+      ],
+      [
+        "Tools & Home Improvement",
+        1200,
+        13.43
+      ],
+      [
+        "All Beauty",
+        754,
+        8.44
+      ],
+      [
+        "Computers",
+        279,
+        3.12
+      ]
+    ],
+    "rating_distribution": [
+      [
+        "excellent",
+        3510,
+        39.0
+      ],
+      [
+        "high",
+        2834,
+        31.49
+      ],
+      [
+        "low",
+        1186,
+        13.18
+      ],
+      [
+        "medium",
+        1470,
+        16.33
+      ]
+    ]
+  },
+  "benchmark_100k": {
+    "total_records": 98500,
+    "avg_rating": 4.243,
+    "std_rating": 0.765,
+    "avg_price": 46.25,
+    "std_price": 124.89,
+    "avg_reviews": 258.7,
+    "unique_categories": 36,
+    "rating_tiers": 4,
+    "min_rating": 1.0,
+    "max_rating": 5.0,
+    "top_categories": [
+      [
+        "Books",
+        39926,
+        41.23
+      ],
+      [
+        "Automotive",
+        19281,
+        19.91
+      ],
+      [
+        "Tools & Home Improvement",
+        14261,
+        14.73
+      ],
+      [
+        "All Beauty",
+        5109,
+        5.28
+      ],
+      [
+        "Buy a Kindle",
+        2520,
+        2.6
+      ]
+    ],
+    "rating_distribution": [
+      [
+        "excellent",
+        38767,
+        39.36
+      ],
+      [
+        "high",
+        30788,
+        31.26
+      ],
+      [
+        "low",
+        13267,
+        13.47
+      ],
+      [
+        "medium",
+        15678,
+        15.92
+      ]
+    ]
+  },
+  "benchmark_1M": {
+    "total_records": 1044500,
+    "avg_rating": 4.23,
+    "std_rating": 0.763,
+    "avg_price": 45.67,
+    "std_price": 189.38,
+    "avg_reviews": 269.0,
+    "unique_categories": 39,
+    "rating_tiers": 4,
+    "min_rating": 1.0,
+    "max_rating": 5.0,
+    "top_categories": [
+      [
+        "Books",
+        423884,
+        41.52
+      ],
+      [
+        "Automotive",
+        164275,
+        16.09
+      ],
+      [
+        "Tools & Home Improvement",
+        112316,
+        11.0
+      ],
+      [
+        "All Beauty",
+        68136,
+        6.67
+      ],
+      [
+        "Computers",
+        43777,
+        4.29
+      ]
+    ],
+    "rating_distribution": [
+      [
+        "excellent",
+        400592,
+        38.35
+      ],
+      [
+        "high",
+        329076,
+        31.51
+      ],
+      [
+        "low",
+        145319,
+        13.91
+      ],
+      [
+        "medium",
+        169513,
+        16.23
+      ]
+    ]
+  },
+  "benchmark_10M": {
+    "total_records": 10564046,
+    "avg_rating": 4.225,
+    "std_rating": 0.766,
+    "avg_price": 46.51,
+    "std_price": 178.5,
+    "avg_reviews": 263.8,
+    "unique_categories": 46,
+    "rating_tiers": 4,
+    "min_rating": 1.0,
+    "max_rating": 5.0,
+    "top_categories": [
+      [
+        "Books",
+        4080671,
+        39.66
+      ],
+      [
+        "Automotive",
+        1757073,
+        17.08
+      ],
+      [
+        "Tools & Home Improvement",
+        1194237,
+        11.61
+      ],
+      [
+        "All Beauty",
+        742225,
+        7.21
+      ],
+      [
+        "Computers",
+        422915,
+        4.11
+      ]
+    ],
+    "rating_distribution": [
+      [
+        "excellent",
+        4022421,
+        38.08
+      ],
+      [
+        "high",
+        3325506,
+        31.48
+      ],
+      [
+        "low",
+        1485645,
+        14.06
+      ],
+      [
+        "medium",
+        1730474,
+        16.38
+      ]
+    ]
+  }
+}
