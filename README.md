@@ -12,9 +12,10 @@ We reviewed a number of publicly available datasets and noted 3 core problems + 
 |Vectors too small, while SOTA models usually output 2k+ even 4k+ dims|2688 dims|
 |Dataset too small, especially if larger vectors are used|10k, 100k, 1M and 10M item variants, all sampled from the large dataset|
 
-### Dataset Issues - WIP
+### Dataset Issues / Notes
 1. In pre-processing we accidentally dropped `asin` which is the primary key of these datasets - to validate recall we will need to add it back in in the next version of this dataset. Right now, there is no PK.
 2. The `details` column has a bunch of redundancy (null values for missing keys), which if prunned will reduce the dataset size by 20-30%.
+3. The original dataset also contains images, but since we do not aim to test embedding model inference performance with vector search vendors, image URLs were not included.
 
 ## Available Datasets
 
