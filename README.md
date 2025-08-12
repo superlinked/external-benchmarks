@@ -72,6 +72,7 @@ Formulate the queries like this:
 1. **Vector Similarity**: Each query should contain `dot product` similarity scoring against a vector that you grab at random from the dataset. Note - if your system caches the vector-specific computations, please rotate a large set of random vectors - otherwise you can use the same vector.
 2. **Filters**: To get the target filter selectivity, please use one of the filter predicates below or similar.
 3. **Results details**: Add `LIMIT 100` to all queries and only retrieve `parent_asin` for each record to minimize networking overhead.
+4. **Vector Search Recall**: We expect that you can tune your system to produce >90% average recall for the ANN index and we expect that you run the above tests with such tunning.
 
 |Selectivity|Predicate|
 |-|-|
@@ -79,6 +80,13 @@ Formulate the queries like this:
 |0.1%|`average_rating <= 3.5 and rating_number > 15 and main_category == 'Computers'`|
 |1%|`average_rating >= 3.5 and rating_number > 10 and main_category == 'Computers'`|
 |10%|`main_category in ['Computers', 'All Beauty', 'Buy a Kindle']`|
+
+## Pricing
+
+To enable us to compare different vendors, we consider the above dataset size + performance to be a "unit" of vector search, for which we would like to know:
+1. What are the vector search vendor parameters of the cloud instance that can support this "unit".
+2. What is the price-per-GB-month for this instance, assuming a sustained average workload as described by the targets above.
+3. How does the price scale with (a) 2x the size (b) 2x the read spead (c) 2x the write speed.
 
 ## License
 
