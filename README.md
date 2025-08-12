@@ -49,7 +49,7 @@ wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-produ
 
 ### Embeddings
 Our goal was to mimic a SOTA model dimensionality (e.g. [Qwen3-Embedding-4B](https://huggingface.co/Qwen/Qwen3-Embedding-4B) at 2560 dims) but to save resources we built similar vectors by concatenating outputs of a smaller model applied to individual string fields of each item:
-- **Model**: BAAI/bge-small-en-v1.5 (384 dims per field)
+- **Model**: [`BAAI/bge-small-en-v1.5`](https://huggingface.co/BAAI/bge-small-en-v1.5) (384 dims per field)
 - **Fields Embedded**: 7 text fields (title, description, features, main_category, store, categories, details)
 - **Final Embedding**: 7 × 384 = 2,688 dimensions per product
 
