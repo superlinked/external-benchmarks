@@ -72,7 +72,7 @@ For `benchmark_10M.parquet` produce the following set of measurements - basicall
 Formulate the queries like this:
 1. **Vector Similarity**: Each query should contain `dot product` similarity scoring against a vector that you grab at random from the dataset. Note - if your system caches the vector-specific computations, please rotate a large set of random vectors - otherwise you can use the same vector.
 2. **Filters**: To get the target filter selectivity, please use one of the filter predicates below or similar.
-3. **Results details**: Add `LIMIT 100` to all queries and only retrieve `parent_asin` for each record to minimize networking overhead.
+3. **Results details**: Add `LIMIT 100` to all queries and only retrieve `parent_asin` for each record to minimize networking overhead (until we add `asin` back in, see *Dataset Issues* above).
 4. **Vector Search Recall**: We expect that you can tune your system to produce >90% average recall for the ANN index and we expect that you run the above tests with such tunning.
 
 |Selectivity|Predicate|
