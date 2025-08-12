@@ -27,7 +27,7 @@ The `benchmark_10M.parquet` dataset is the one to measure the vector search perf
 | benchmark_1M | 1,044,500 | 23.4 GB | Production simulation |
 | benchmark_10M | 10,564,046 | 243 GB | Scale & stress testing |
 
-To learn more about the datasets, see [`reports/summary_report.md`](reports/summary_report.md) and [`reports/benchmark_10k/README.md`].
+To learn more about the datasets, see [`reports/summary_report.md`](reports/summary_report.md) and [`reports/benchmark_10k/README.md`](reports/benchmark_10k/README.md).
 
 ### Data Access
 
