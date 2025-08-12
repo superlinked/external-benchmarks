@@ -87,7 +87,7 @@ Formulate the queries like this:
 To enable us to compare different vendors, we consider the above dataset size + performance to be a "unit" of vector search, for which we would like to know:
 1. What are the vector search vendor parameters of the cloud instance that can support this "unit".
 2. What is the price-per-GB-month for this instance, assuming a sustained average workload as described by the targets above.
-3. How does the price scale with (a) 2x the size (b) 2x the read spead (c) 2x the write speed.
+3. How does the price scale with (a) 2x the size (b) 2x the read QPS (c) 2x the write QPS.
 
 ## License
 
