@@ -6,29 +6,92 @@ This repo contains datasets for benchmarking vector search performance, to help 
 
 We reviewed a number of publicly available datasets and noted 3 core problems + here is how this dataset fixes them:
 
-|Problems of other vector search benchmarks|How this dataset solves it|
-|-|-|
-|Not enough metadata of various types makes it hard to test filter performance|17 metadata properties - numeric, categorical, relational|
-|Vectors too small, while SOTA models usually output 2k+ even 4k+ dims|2688 dims|
-|Dataset too small, especially if larger vectors are used|10k, 100k, 1M and 10M item variants, all sampled from the large dataset|
-
-### Dataset Issues / Notes
-1. In pre-processing we accidentally dropped `asin` which is the primary key of these datasets - to validate recall we will need to add it back in in the next version of this dataset. Right now, there is no PK.
-2. The `details` column has a bunch of redundancy (null values for missing keys), which if prunned will reduce the dataset size by 20-30%.
-3. The original dataset also contains images, but since we do not aim to test embedding model inference performance with vector search vendors, image URLs were not included.
+|Problems of other vector search benchmarks| How this dataset solves it                                              |
+|-|-------------------------------------------------------------------------|
+|Not enough metadata of various types makes it hard to test filter performance| 3 number, 1 categorical, 3 text, 1 image column                         |
+|Vectors too small, while SOTA models usually output 2k+ even 4k+ dims| 4154 dims                                                               |
+|Dataset too small, especially if larger vectors are used| 10k, 100k, 1M and 10M item variants, all sampled from the large dataset |
 
 ## Available Datasets
 
-The `benchmark_10M.parquet` dataset is the one to measure the vector search performance on. We have added smaller variants of this dataset (via uniform sampling) to make it easier to test your benchmarking setup.
+### Metadata
 
-| Dataset | Records | File Size |
-|---------|---------|-----------|
-| benchmark_10k | 9,000 | 207 MB |
-| benchmark_100k | 98,500 | 2.3 GB |
-| benchmark_1M | 1,044,500 | 23.4 GB |
-| benchmark_10M | 10,564,046 | 243 GB |
+The individual `parquet` files contain the metadata and the encoder inputs.
 
-To learn more about the datasets, see [`reports/summary_report.md`](reports/summary_report.md) and [`reports/benchmark_10k/README.md`](reports/benchmark_10k/README.md).
+```
+#   Column          Dtype  
+---  ------          -----  
+ 0   main_category   object 
+ 1   title           object 
+ 2   average_rating  float64
+ 3   rating_number   float64
+ 4   description     object 
+ 5   price           float64
+ 6   categories      object 
+ 7   parent_asin     object 
+ 8   image_url       object 
+```
+
+| Dataset                | Records    | File Size |
+|------------------------|------------|-----------|
+| benchmark_10k.parquet  | 10,000     | 9.5 MB    |
+| benchmark_100k.parquet | 100,000    | 93.1 MB   |
+| benchmark_1M.parquet   | 1,000,000  | 922.5 MB  |
+| benchmark_10M.parquet  | 10,534,536 | 9.4 GB    |
+
+### Vectors
+
+The folders with `-vector` suffix contain the vectors. These folders have `parquet` files inside.
+The structure is
+```
+ |-- parent_asin: string (nullable = true)
+ |-- value: array (nullable = true)
+ |    |-- element: double (containsNull = true)
+```
+
+| Dataset                | Files | File Size |
+|------------------------|-------|-----------|
+| benchmark_10k-vectors  | 1,000 | 221.92 MB |
+| benchmark_100k-vectors | 1,000 | 1.28 GB   |
+| benchmark_1M-vectors   | 1,000 | 20.36 GB  |
+| benchmark_10M-vectors  | 5,000 | 214.44 GB |
+
+### Queries
+
+Some smaller dataset versions have a query set guaranteed to only contain parent_asins from the corresponding dataset version.
+The smaller versions are created for testing purposes when only a smaller dataset was ingested.
+The structure is
+```
+{
+    query_id: {
+        product_id: str | None,
+        rating_max: int | None,
+        rating_num_min: int | None,
+        main_category: str | None,
+    },
+    ...
+}
+```
+
+| Dataset               | Queries |
+|-----------------------|---------|
+| query-params-100k     | 15      |
+| query-params-1M       | 117     |
+| query-params-10M      | 1,000   |
+
+#### Result set
+
+Query results are stored in `ranked-results.json`. 
+The structure is
+
+```
+{
+    query_id: [ordered list of result ids],
+    ...
+}
+```
+
+NOTE: The results expect all products ingested in the database!
 
 ### Data Access
 
@@ -36,10 +99,25 @@ Datasets are available via HTTPS download:
 
 ```bash
 # Download benchmark datasets
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products/benchmark_10k.parquet
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products/benchmark_100k.parquet
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products/benchmark_1M.parquet
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products/benchmark_10M.parquet
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-10k.parquet
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-100k.parquet
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-1M.parquet
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-10M.parquet
+```
+
+```bash
+# Download vectors - WE NEED A SOLUTION HERE
+gsutil -m cp -r gs://superlinked-benchmarks-external/amazon-products-images/benchmark-10k-vectors ./local_folder
+gsutil -m cp -r gs://superlinked-benchmarks-external/amazon-products-images/benchmark-100k-vectors ./local_folder
+gsutil -m cp -r gs://superlinked-benchmarks-external/amazon-products-images/benchmark-1M-vectors ./local_folder
+gsutil -m cp -r gs://superlinked-benchmarks-external/amazon-products-images/benchmark-10M-vectors ./local_folder
+```
+
+```bash
+# Download queries
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/query-params-100k.json
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/query-params-1M.json
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/query-params-10M.json
 ```
 
 ## Dataset Production
@@ -49,15 +127,17 @@ wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-produ
 - **Categories**: Books, Automotive, Tools & Home Improvement, All Beauty, Computers
 
 ### Embeddings
-Our goal was to mimic a SOTA model dimensionality (e.g. [Qwen3-Embedding-4B](https://huggingface.co/Qwen/Qwen3-Embedding-4B) at 2560 dims) but to save resources we built similar vectors by concatenating outputs of a smaller model applied to individual string fields of each item:
-- **Model**: [`BAAI/bge-small-en-v1.5`](https://huggingface.co/BAAI/bge-small-en-v1.5) (384 dims per field)
-- **Fields Embedded**: 7 text fields (title, description, features, main_category, store, categories, details)
-- **Final Embedding**: 7 × 384 = 2,688 dimensions per product
 
+The embeddings are created via a [superlinked config](superlinked_app). The resulting 4154 dim vector contains:
+- 1 categorical
+- 3 number
+- 3 text (Qwen/Qwen3-Embedding-0.6B)
+- 1 image()
+embeddings concatenated.
 
 ## Running Benchmarks
 
-For `benchmark_10M.parquet` produce the following set of measurements - basically fill in the 'TBD' cells:
+For the `benchmark_10M` setup produce the following set of measurements - basically fill in the 'TBD' cells:
 
 | # | Write | Target | Observed |Read | Target | Observed |
 |-|-|-|-|-|-|-|
@@ -70,17 +150,22 @@ For `benchmark_10M.parquet` produce the following set of measurements - basicall
 |7|200 QPS for single-object updates (incl. embedding)| 2s @ p95 | TBD |20 QPS of 1% filter selectivity| 100ms @ p95 | TBD |
 
 Formulate the queries like this:
-1. **Vector Similarity**: Each query should contain `dot product` similarity scoring against a vector that you grab at random from the dataset. Note - if your system caches the vector-specific computations, please rotate a large set of random vectors - otherwise you can use the same vector.
-2. **Filters**: To get the target filter selectivity, please use one of the filter predicates below or similar.
-3. **Results details**: Add `LIMIT 100` to all queries and only retrieve `parent_asin` for each record to minimize networking overhead (until we add `asin` back in, see *Dataset Issues* above).
-4. **Vector Search Recall**: We expect that you can tune your system to produce >90% average recall for the ANN index and we expect that you run the above tests with such tunning.
+1. **Vector Similarity**: Each query should contain `dot product` similarity scoring against a vector that you grab from the DB.
+2. **Filters**: To get the target filter selectivity, please use the filters specified in the `query_params` files.
+3. **Results details**: Add `LIMIT 100` to all queries and only retrieve `parent_asin` for each record to minimize networking overhead.
+4. **Vector Search Recall**: We expect that you can tune your system to produce >90% average hit rate for the ANN index and we expect that you run the above tests with such tuning.
 
-|Selectivity|Predicate|
-|-|-|
-|0.001%|`average_rating <= 3.0 and rating_number > 130 and main_category == 'Computers'`|
-|0.1%|`average_rating <= 3.5 and rating_number > 15 and main_category == 'Computers'`|
-|1%|`average_rating >= 3.5 and rating_number > 10 and main_category == 'Computers'`|
-|10%|`main_category in ['Computers', 'All Beauty', 'Buy a Kindle']`|
+|Selectivity| Predicate                                                                       |
+|-|---------------------------------------------------------------------------------|
+|0.001%| `average_rating <= 3.0 and rating_number > 130 and main_category == 'Computers'` |
+|0.1%| `average_rating <= 3.5 and rating_number > 30 and main_category == 'Computers'` |
+|1%| `rating_number > 45 and main_category == 'Computers'`                        |
+|10%| `average_rating <= 3.5 and rating_number > 1`                                   |
+
+## Query result quality evaluation
+
+You are welcome to use the `calculate_hit_rates` function in [eval.py](eval.py).
+It expects the prediction results in a similar format as the ground truth result set is provided.
 
 ## Pricing
 
