@@ -106,7 +106,7 @@ wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-produ
 ```
 
 ```bash
-# Download vectors - WE NEED A SOLUTION HERE
+# Download vectors
 gsutil -m cp -r gs://superlinked-benchmarks-external/amazon-products-images/benchmark-10k-vectors ./local_folder
 gsutil -m cp -r gs://superlinked-benchmarks-external/amazon-products-images/benchmark-100k-vectors ./local_folder
 gsutil -m cp -r gs://superlinked-benchmarks-external/amazon-products-images/benchmark-1M-vectors ./local_folder
