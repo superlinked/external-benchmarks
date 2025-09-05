@@ -14,47 +14,16 @@ We reviewed a number of publicly available datasets and noted 3 core problems + 
 
 ## Available Datasets
 
-### Metadata
+### Product data
 
-The individual `parquet` files contain the metadata and the encoder inputs.
-
-```
-#   Column          Dtype  
----  ------          -----  
- 0   main_category   object 
- 1   title           object 
- 2   average_rating  float64
- 3   rating_number   float64
- 4   description     object 
- 5   price           float64
- 6   categories      object 
- 7   parent_asin     object 
- 8   image_url       object 
-```
+The individual `parquet` files contain the metadata and vectors, too.
 
 | Dataset                | Records    | File Size |
 |------------------------|------------|-----------|
-| benchmark_10k.parquet  | 10,000     | 9.5 MB    |
-| benchmark_100k.parquet | 100,000    | 93.1 MB   |
-| benchmark_1M.parquet   | 1,000,000  | 922.5 MB  |
-| benchmark_10M.parquet  | 10,534,536 | 9.4 GB    |
-
-### Vectors
-
-The folders with `-vector` suffix contain the vectors. These folders have `parquet` files inside.
-The structure is
-```
- |-- parent_asin: string (nullable = true)
- |-- value: array (nullable = true)
- |    |-- element: double (containsNull = true)
-```
-
-| Dataset                | Files | File Size |
-|------------------------|-------|-----------|
-| benchmark_10k-vectors  | 1,000 | 221.92 MB |
-| benchmark_100k-vectors | 1,000 | 1.28 GB   |
-| benchmark_1M-vectors   | 1,000 | 20.36 GB  |
-| benchmark_10M-vectors  | 5,000 | 214.44 GB |
+| benchmark_10k.parquet  | 10,000     | 231.4 MB  |
+| benchmark_100k.parquet | 100,000    | 1.3 GB    |
+| benchmark_1M.parquet   | 1,000,000  | 21.5 GB   |
+| benchmark_10M.parquet  | 10,534,536 | 223.8 GB  |
 
 ### Queries
 
@@ -106,14 +75,6 @@ wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-produ
 ```
 
 ```bash
-# Download vectors
-gsutil -m cp -r gs://superlinked-benchmarks-external/amazon-products-images/benchmark-10k-vectors ./local_folder
-gsutil -m cp -r gs://superlinked-benchmarks-external/amazon-products-images/benchmark-100k-vectors ./local_folder
-gsutil -m cp -r gs://superlinked-benchmarks-external/amazon-products-images/benchmark-1M-vectors ./local_folder
-gsutil -m cp -r gs://superlinked-benchmarks-external/amazon-products-images/benchmark-10M-vectors ./local_folder
-```
-
-```bash
 # Download queries
 wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/query-params-100k.json
 wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/query-params-1M.json
@@ -129,10 +90,10 @@ wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-produ
 ### Embeddings
 
 The embeddings are created via a [superlinked config](superlinked_app). The resulting 4154 dim vector contains:
-- 1 categorical
-- 3 number
-- 3 text (`Qwen/Qwen3-Embedding-0.6B`)
-- 1 image using (`laion/CLIP-ViT-H-14-laion2B-s32B-b79K`)
+- 1 categorical,
+- 3 number,
+- 3 text (`Qwen/Qwen3-Embedding-0.6B`),
+- and 1 image using (`laion/CLIP-ViT-H-14-laion2B-s32B-b79K`)
 embeddings concatenated.
 
 ## Running Benchmarks
