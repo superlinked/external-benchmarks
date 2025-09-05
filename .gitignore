@@ -1,2 +1,6 @@
 *.parquet
 *.jsonl
+*.ipynb_checkpoints
+*.DS_Store
+*.idea
+*.env
