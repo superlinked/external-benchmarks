@@ -86,7 +86,7 @@ The structure is
 
 ```
 {
-    query_id: [ordered list of result ids],
+    query_id: [ordered list of result parent_asins],
     ...
 }
 ```
@@ -131,8 +131,8 @@ wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-produ
 The embeddings are created via a [superlinked config](superlinked_app). The resulting 4154 dim vector contains:
 - 1 categorical
 - 3 number
-- 3 text (Qwen/Qwen3-Embedding-0.6B)
-- 1 image()
+- 3 text (`Qwen/Qwen3-Embedding-0.6B`)
+- 1 image using (`laion/CLIP-ViT-H-14-laion2B-s32B-b79K`)
 embeddings concatenated.
 
 ## Running Benchmarks
@@ -150,7 +150,8 @@ For the `benchmark_10M` setup produce the following set of measurements - basica
 |7|200 QPS for single-object updates (incl. embedding)| 2s @ p95 | TBD |20 QPS of 1% filter selectivity| 100ms @ p95 | TBD |
 
 Formulate the queries like this:
-1. **Vector Similarity**: Each query should contain `dot product` similarity scoring against a vector that you grab from the DB.
+1. **Vector Similarity**: Each query should contain `dot product` similarity scoring against a vector that you grab from the DB. 
+The vector is specified in query_params under the `product_id` key.
 2. **Filters**: To get the target filter selectivity, please use the filters specified in the `query_params` files.
 3. **Results details**: Add `LIMIT 100` to all queries and only retrieve `parent_asin` for each record to minimize networking overhead.
 4. **Vector Search Recall**: We expect that you can tune your system to produce >90% average hit rate for the ANN index and we expect that you run the above tests with such tuning.
