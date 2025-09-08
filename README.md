@@ -6,11 +6,11 @@ This repo contains datasets for benchmarking vector search performance, to help 
 
 We reviewed a number of publicly available datasets and noted 3 core problems + here is how this dataset fixes them:
 
-|Problems of other vector search benchmarks| How this dataset solves it                                              |
-|-|-------------------------------------------------------------------------|
-|Not enough metadata of various types makes it hard to test filter performance| 3 number, 1 categorical, 3 text, 1 image column                         |
-|Vectors too small, while SOTA models usually output 2k+ even 4k+ dims| 4154 dims                                                               |
-|Dataset too small, especially if larger vectors are used| 10k, 100k, 1M and 10M item variants, all sampled from the large dataset |
+|Problems of other vector search benchmarks| How this dataset solves it                                         |
+|-|--------------------------------------------------------------------|
+|Not enough metadata of various types makes it hard to test filter performance| 3 number, 1 categorical, 3 text, 1 image column                    |
+|Vectors too small, while SOTA models usually output 2k+ even 4k+ dims| 4154 dims                                                          |
+|Dataset too small, especially if larger vectors are used| 100k, 1M and 10M item variants, all sampled from the large dataset |
 
 ## Available Datasets
 
@@ -18,12 +18,11 @@ We reviewed a number of publicly available datasets and noted 3 core problems + 
 
 The individual `snappy.parquet` files contain the metadata and vectors, too.
 
-| Dataset                | Records    | File Size |
-|------------------------|------------|-----------|
-| benchmark_10k.parquet  | 10,000     | 231.4 MB  |
-| benchmark_100k.parquet | 100,000    | 1.3 GB    |
-| benchmark_1M.parquet   | 1,000,000  | 21.5 GB   |
-| benchmark_10M.parquet  | 10,534,536 | 223.8 GB  |
+| Dataset                        | Records    | File Size |
+|--------------------------------|------------|-----------|
+| benchmark_100k.snappy.parquet  | 100,000    | 1.3 GB    |
+| benchmark_1M.snappy.parquet    | 1,000,000  | 21.5 GB   |
+| benchmark_10M.snappy.parquet   | 10,534,536 | 223.8 GB  |
 
 ### Queries
 
@@ -68,7 +67,6 @@ Datasets are available via HTTPS download:
 
 ```bash
 # Download benchmark datasets
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-10K-combined/benchmark-10K.snappy.parquet/benchmark-10K.snappy.parquet
 wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-100K-combined/benchmark-100K.snappy.parquet
 wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-1M-combined/benchmark-1M.snappy.parquet
 wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-10M-combined/benchmark-10M.snappy.parquet
