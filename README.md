@@ -92,7 +92,8 @@ The embeddings are created via a [superlinked config](superlinked_app). The resu
 - 1 categorical,
 - 3 number,
 - 3 text (`Qwen/Qwen3-Embedding-0.6B`),
-- and 1 image using (`laion/CLIP-ViT-H-14-laion2B-s32B-b79K`)
+- and 1 image (`laion/CLIP-ViT-H-14-laion2B-s32B-b79K`)
+
 embeddings concatenated.
 
 ## Running Benchmarks
