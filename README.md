@@ -14,6 +14,20 @@ We reviewed a number of publicly available datasets and noted 3 core problems + 
 
 ## Available Datasets
 
+The dataset comes from the [Amazon reviews dataset](https://amazon-reviews-2023.github.io/) by downloading the following
+keys:
+```
+categories = [
+    "Books",
+    "Automotive",
+    "Tools and Home Improvement",
+    "All Beauty",
+    "Electronics",
+    "Software",
+    "Health and Household",
+]
+```
+
 ### Product data
 
 The individual `snappy.parquet` files contain the metadata and vectors, too.
