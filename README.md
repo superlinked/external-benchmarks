@@ -16,7 +16,7 @@ We reviewed a number of publicly available datasets and noted 3 core problems + 
 
 ### Product data
 
-The individual `parquet` files contain the metadata and vectors, too.
+The individual `snappy.parquet` files contain the metadata and vectors, too.
 
 | Dataset                | Records    | File Size |
 |------------------------|------------|-----------|
@@ -68,10 +68,10 @@ Datasets are available via HTTPS download:
 
 ```bash
 # Download benchmark datasets
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-10k.parquet
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-100k.parquet
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-1M.parquet
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-10M.parquet
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-10K-combined/benchmark-10K.snappy.parquet/benchmark-10K.snappy.parquet
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-100K-combined/benchmark-100K.snappy.parquet
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-1M-combined/benchmark-1M.snappy.parquet
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-10M-combined/benchmark-10M.snappy.parquet
 ```
 
 ```bash

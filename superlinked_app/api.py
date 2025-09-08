@@ -9,7 +9,7 @@ from superlinked_app.query import query
 load_dotenv("superlinked_app/.env")
 
 redis_url = "CHANGE ME"
-redis_port = 0
+redis_port = 0 # CHANGE ME
 redis_username = "CHANGE ME"
 redis_password = os.environ.get("REDIS_PASSWORD")
 DATA_PATH = (

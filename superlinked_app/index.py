@@ -13,7 +13,7 @@ load_dotenv("./superlinked_app/.env")
 MODAL_TOKEN_ID=os.environ["MODAL_TOKEN_ID"]
 MODAL_TOKEN_SECRET=os.environ["MODAL_TOKEN_SECRET"]
 MODAL_BATCH_SIZE=int(os.environ["MODAL_BATCH_SIZE"])
-UNIQUE_CATEGORIES_PATH="gs://superlinked-benchmarks-external/amazon-products-images/unique_categories.json"
+UNIQUE_CATEGORIES_PATH="gs://superlinked-benchmarks-external/amazon-products-images/unique-categories.json"
 
 number_space_params = {
     "average_rating": (1.0, 5.0),
