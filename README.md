@@ -114,7 +114,6 @@ gsutil cp "gs://superlinked-benchmarks-external/amazon-products-images/ranked-re
 ### Source Data
 - **Origin**: [Amazon Reviews 2023 dataset](https://amazon-reviews-2023.github.io/)
 - **Categories**: `["Books", "Automotive", "Tools and Home Improvement", "All Beauty", "Electronics", "Software", "Health and Household"]`
-]
 
 ### Embeddings
 
