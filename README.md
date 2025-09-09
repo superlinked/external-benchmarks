@@ -16,26 +16,43 @@ We reviewed a number of publicly available datasets and noted 3 core problems + 
 
 ### Product data
 
-The individual `snappy.parquet` files contain the metadata and vectors, too.
+The folders contain `parquet` files with the metadata and vectors.
 
-| Dataset                        | Records    | File Size |
-|--------------------------------|------------|-----------|
-| benchmark_100k.snappy.parquet  | 100,000    | 1.3 GB    |
-| benchmark_1M.snappy.parquet    | 1,000,000  | 21.5 GB   |
-| benchmark_10M.snappy.parquet   | 10,534,536 | 223.8 GB  |
+| Dataset        | Records    | # Files | Size    |
+|----------------|------------|---------|---------|
+| benchmark_10k  | 10,000     | 100     | ~230 MB |
+| benchmark_100k | 100,000    | 100     | ~2.3 GB |
+| benchmark_1M   | 1,000,000  | 100     | ~23 GB  |
+| benchmark_10M  | 10,534,536 | 1000    | ~240 GB |
+
+The structure of the files is the same throughout:
+
+```
+Schema([('parent_asin', String), # the id
+        ('main_category', String),
+        ('title', String),
+        ('average_rating', Float64),
+        ('rating_number', Float64),
+        ('description', String),
+        ('price', Float64),
+        ('categories', String),
+        ('image_url', String)])
+        ('value', List(Float64)), # the vectors
+```
 
 ### Queries
 
 Some smaller dataset versions have a query set guaranteed to only contain parent_asins from the corresponding dataset version.
-The smaller versions are created for testing purposes when only a smaller dataset was ingested.
-The structure is
+The smaller versions are created for testing purposes when only a smaller dataset was ingested. 
+In the [query](superlinked_app/query.py) file the actual query structure can be seen.
+The file structure is
 ```
 {
     query_id: {
-        product_id: str | None,
-        rating_max: int | None,
-        rating_num_min: int | None,
-        main_category: str | None,
+        product_id: str | None,       # parent_asin - get that value from the database and search with it
+        rating_max: int | None,       # filter for product.average_rating <= rating_max
+        rating_num_min: int | None,   # filter product.rating_number > rating_num_min
+        main_category: str | None,    # filter for product.main_category == main_category
     },
     ...
 }
@@ -63,20 +80,33 @@ NOTE: The results expect all products ingested in the database!
 
 ### Data Access
 
-Datasets are available via HTTPS download:
+Datasets are available via multiple ways:
 
+1. The [bucket](https://console.cloud.google.com/storage/browser/superlinked-benchmarks-external?pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22)) with the data is publicly available
+in the `amazon_products_images` folder.
+2. You can use gsutil to download the dataset (as HTTPS download works best for individual files):
 ```bash
 # Download benchmark datasets
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-100K-combined/benchmark-100K.snappy.parquet
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-1M-combined/benchmark-1M.snappy.parquet
-wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/benchmark-10M-combined/benchmark-10M.snappy.parquet
+gsutil cp -r "gs://superlinked-benchmarks-external/amazon-products-images/benchmark-10k/**" ./your/local/data/folder/
+gsutil cp -r "gs://superlinked-benchmarks-external/amazon-products-images/benchmark-100k/**" ./your/local/data/folder/
+gsutil cp -r "gs://superlinked-benchmarks-external/amazon-products-images/benchmark-1M/**" ./your/local/data/folder/
+gsutil cp -r "gs://superlinked-benchmarks-external/amazon-products-images/benchmark-10M/**" ./your/local/data/folder/
 ```
-
+As queries are individual files, even a simple https download works fine:
 ```bash
 # Download queries
 wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/query-params-100k.json
 wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/query-params-1M.json
 wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/query-params-10M.json
+```
+Same is true for results:
+```bash
+# Download the ground truth query results
+wget https://storage.googleapis.com/superlinked-benchmarks-external/amazon-products-images/ranked-results.json
+```
+but gsutil works fine for these as well (you can infer the path from the URLs). For `ranked-results.json`:
+```bash
+gsutil cp "gs://superlinked-benchmarks-external/amazon-products-images/ranked-results.json" ./your/local/data/folder/
 ```
 
 ## Dataset Production
