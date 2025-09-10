@@ -64,7 +64,7 @@ The file structure is
 | query-params-1M       | 117     |
 | query-params-10M      | 1,000   |
 
-#### Result set
+### Result set
 
 Query results are stored in `ranked-results.json`. 
 The structure is
@@ -78,13 +78,11 @@ The structure is
 
 NOTE: The results expect all products ingested in the database!
 
-### Data Access
+## Data Access
 
 Datasets are available via multiple ways:
 
-1. The [bucket](https://console.cloud.google.com/storage/browser/superlinked-benchmarks-external?pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22)) with the data is publicly available
-in the `amazon_products_images` folder.
-2. You can use gsutil to download the dataset (as HTTPS download works best for individual files):
+1. You can use gsutil to download the dataset (as HTTPS download works best for individual files):
 ```bash
 # Download benchmark datasets
 gsutil cp -r "gs://superlinked-benchmarks-external/amazon-products-images/benchmark-10k/**" ./your/local/data/folder/
@@ -108,6 +106,20 @@ but gsutil works fine for these as well (you can infer the path from the URLs). 
 ```bash
 gsutil cp "gs://superlinked-benchmarks-external/amazon-products-images/ranked-results.json" ./your/local/data/folder/
 ```
+2. Using huggingface datasets
+
+The product data is available using [HF Datasets](https://huggingface.co/docs/datasets/en/index).
+
+```python
+from datasets import load_dataset
+
+benchmark_10k = load_dataset("superlinked/external-benchmarking", data_dir="benchmark-10k")
+benchmark_100k = load_dataset("superlinked/external-benchmarking", data_dir="benchmark-100k")
+benchmark_1M = load_dataset("superlinked/external-benchmarking", data_dir="benchmark-1M")
+benchmark_10M = load_dataset("superlinked/external-benchmarking", data_dir="benchmark-10M")
+```
+
+For query and result data, please use one of the above methods (gsutil or direct download).
 
 ## Dataset Production
 
