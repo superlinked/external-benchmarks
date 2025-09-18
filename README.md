@@ -137,6 +137,8 @@ The embeddings are created via a [superlinked config](superlinked_app). The resu
 
 embeddings concatenated.
 
+The float precision used throughout is fp16, or half-precision.
+
 ## Running Benchmarks
 
 For the `benchmark_10M` setup produce the following set of measurements - basically fill in the 'TBD' cells:
