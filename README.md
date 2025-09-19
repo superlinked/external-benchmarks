@@ -51,7 +51,7 @@ The file structure is
     query_id: {
         product_id: str | None,       # parent_asin - get that value from the database and search with it
         rating_max: int | None,       # filter for product.average_rating <= rating_max
-        rating_num_min: int | None,   # filter product.rating_number > rating_num_min
+        rating_num_min: int | None,   # filter product.rating_number >= rating_num_min
         main_category: str | None,    # filter for product.main_category == main_category
     },
     ...
@@ -162,10 +162,10 @@ The vector is specified in query_params under the `product_id` key.
 
 |Selectivity| Predicate                                                                       |
 |-|---------------------------------------------------------------------------------|
-|0.001%| `average_rating <= 3.0 and rating_number > 130 and main_category == 'Computers'` |
-|0.1%| `average_rating <= 3.5 and rating_number > 30 and main_category == 'Computers'` |
-|1%| `rating_number > 45 and main_category == 'Computers'`                        |
-|10%| `average_rating <= 3.5 and rating_number > 1`                                   |
+|0.001%| `average_rating <= 3.0 and rating_number >= 130 and main_category == 'Computers'` |
+|0.1%| `average_rating <= 3.5 and rating_number >= 30 and main_category == 'Computers'` |
+|1%| `rating_number >= 45 and main_category == 'Computers'`                        |
+|10%| `average_rating <= 3.5 and rating_number >= 1`                                   |
 
 ## Query result quality evaluation
 
